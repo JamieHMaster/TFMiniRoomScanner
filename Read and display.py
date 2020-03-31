@@ -2,7 +2,7 @@
 ## Script listens to serial port and writes contents into a file
 ##############
 ## requires pySerial to be installed 
-import serial, time
+import serial, time, colorsys
 from math import *
 from vpython import canvas, sphere, color, vector, arrow
 
@@ -40,10 +40,9 @@ class createPoints():
         self.Dist, self.Strength, self.Pan, self.Tilt = int(Dist), float(Strength), 90 - float(Pan), 90 - float(Tilt)
         print(self.Dist, self.Strength, self.Pan, self.Tilt)
         self.Xpos, self.Ypos, self.Zpos = 0, 0, 0
-        self.pointColor = mapRanges(self.Strength, 0, strengthMaxVaue, 0, 256)
-        self.red = self.pointColor/(256**2)
-        self.green = (self.pointColor/256)%256
-        self.blue = self.pointColor%256
+        self.pointColor = mapRanges(self.Strength, 0, strengthMaxVaue, 0, 140)
+        self.pointColor = colorsys.hsv_to_rgb(self.pointColor,1,1)
+        print(self.pointColor)
 
     def calculateXpos(self):
         self.Xpos = self.Dist*sin(radians(self.Tilt))*sin(radians(self.Pan))
@@ -60,7 +59,7 @@ class createPoints():
         self.calculateYpos()
         self.calculateZpos()
         lineToPoint.axis=vector(self.Xpos, self.Ypos, self.Zpos)
-        self.Pos = sphere(pos = vector(self.Xpos,self.Ypos,self.Zpos), radius = 0.2, color = vector(self.red,self.green,self.blue), canvas = window, make_trail=False)
+        self.Pos = sphere(pos = vector(self.Xpos,self.Ypos,self.Zpos), radius = 0.2, color = vector(self.pointColor[0], self.pointColor[1], self.pointColor[2]), canvas = window, make_trail=False)
         #print(vector(self.red,self.green,self.blue))
 
 origin = sphere(pos = vector(0,0,0), radius = 3, color = color.green, canvas = window, make_trail=True)
