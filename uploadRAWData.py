@@ -8,13 +8,9 @@ from vpython import canvas, sphere, color, vector, arrow, text
 
 window = canvas(title='3D Room Scan', width=1000, height=1000, background=color.white) 
 
-serial_port = 'COM5'
-baud_rate = 9600 #In arduino, Serial.begin(baud_rate)
-ser = serial.Serial(serial_port, baud_rate)
-
 strengthMaxVaue = 10000
 distMaxValue = 48000
-longestDist = 100 # the furthest distance a point is from the origin. This controls the size of the arrows
+pointDist = 100
 
 spheres = []
 pointDist = 0
@@ -79,36 +75,11 @@ onY100 = text(text="100cm", align='center', color=vector(0,1,0), pos=vector(4,10
 onZ100 = text(text="100cm", align='center', color=vector(0,0,1), pos=vector(0,2,100))
 lineToPoint = arrow(pos=vector(0,0,0), axis=vector(0,0,0), shaftwidth=1, color=vector(0,1,1))
 
-onX50.length *= 2
-onY50.length *= 2
-onZ50.length *= 2
-onX100.length *= 2
-onY100.length *= 2
-onZ100.length *= 2
-
-onX50.height *= 2
-onY50.height *= 2
-onZ50.height *= 2
-onX100.height *= 2
-onY100.height *= 2
-onZ100.height *= 2
-
-def main(resolution, minPos, maxPos, minTilt, maxTilt, saveLocation):
-    try:
-        output_file = open(str(saveLocation), "w+")
-    except:
-        output_file = open("Output/output.txt", "w+")
-    print(resolution, minPos, maxPos, minTilt, maxTilt)
-    ser.write((resolution).encode())
-    ser.write((minPos).encode())
-    ser.write((maxPos).encode())
-    ser.write((minTilt).encode())
-    ser.write((maxTilt).encode())
-
+def main(fileName):
+    print(fileName)
+    openFile = open(str(fileName), "r")
     while True:
-        line = ser.readline()
-        line = str(line.decode("utf-8")) #ser.readline returns a binary, convert to string
-        output_file.write(line)
+        line = openFile.readline()
         print(line)
         temp = line.split(" ")
 

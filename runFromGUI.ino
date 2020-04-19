@@ -31,7 +31,7 @@ const int MAXIMUM_PAN = 90;
 const int MAXIMUM_TILT = 90;
 
 const float RESOLUTION = 0.8; //Degrees motors move every time
-const int SAMPLE_NO = 1; // no. of samples it takes for an average distance
+const int SAMPLE_NO = 3; // no. of samples it takes for an average distance
 const int DELAY_TIME = 100; //Time in ms between loops
 
 float PanPos = MINIMUM_PAN; //Degrees Pan motor is at
@@ -45,8 +45,6 @@ void setup() {
 
   driver.init(B000000);         // Address pins A5-A0 set to B000000
   driver.setPWMFrequency(50);   // Set frequency to 50Hz
-
-  Serial.print(Serial.read)
 
   moveMotor(PAN_NUM, 0);
   moveMotor(TILT_NUM, 0);
