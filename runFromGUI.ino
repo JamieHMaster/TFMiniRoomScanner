@@ -31,7 +31,7 @@ const int MAXIMUM_PAN = 90;
 const int MAXIMUM_TILT = 90;
 
 const float RESOLUTION = 0.8; //Degrees motors move every time
-const int SAMPLE_NO = 3; // no. of samples it takes for an average distance
+const int SAMPLE_NO = 1; // no. of samples it takes for an average distance
 const int DELAY_TIME = 100; //Time in ms between loops
 
 float PanPos = MINIMUM_PAN; //Degrees Pan motor is at
@@ -82,7 +82,7 @@ void getTFminiPlusData() {
       dist += lastDist;
       temp += lastTemp;
       strength += lastStrength;
-    }
+    }}
   dist /= SAMPLE_NO;
   temp /= SAMPLE_NO;
   strength /= SAMPLE_NO;
@@ -95,7 +95,6 @@ void getTFminiPlusData() {
   Serial.print(strength); 
   Serial.print(" ");
   Serial.println(millis());
- }
 }
 
 void printData() {

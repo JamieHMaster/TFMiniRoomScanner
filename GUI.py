@@ -63,6 +63,12 @@ class NewScan():
         #resolution entry
         self.resolutionEntry = ttk.Entry(main_frame, widget=None)
 
+        #averaging label
+        self.averagingLabel = ttk.Label(main_frame, text="Average:")
+
+        #averaging entry
+        self.averagingEntry = ttk.Entry(main_frame, widget=None)
+
         #Pan scan angle label
         self.panAngleLabel = ttk.Label(main_frame, text="Pan scan angle from ")
 
@@ -105,6 +111,8 @@ class NewScan():
         self.createNewScanLabel.grid(row=0, column=1)
         self.resolutionLabel.grid(row=1, column=0)
         self.resolutionEntry.grid(row=1, column=1)
+        self.averagingLabel.grid(row=1, column=2)
+        self.averagingEntry.grid(row=1, column=3)
         self.panAngleLabel.grid(row=2, column=0)
         self.minimumPanEntry.grid(row=2, column=1)
         self.panAngleLabel2.grid(row=2, column=2)
