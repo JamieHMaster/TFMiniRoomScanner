@@ -99,11 +99,13 @@ def main(resolution, minPos, maxPos, minTilt, maxTilt, saveLocation):
     except:
         output_file = open("Output/output.txt", "w+")
     print(resolution, minPos, maxPos, minTilt, maxTilt)
+    ser.write("<".encode())
     ser.write((resolution).encode())
     ser.write((minPos).encode())
     ser.write((maxPos).encode())
     ser.write((minTilt).encode())
     ser.write((maxTilt).encode())
+    ser.write(">".encode())
 
     while True:
         line = ser.readline()
