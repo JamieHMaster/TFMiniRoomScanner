@@ -145,7 +145,7 @@ class NewScan():
     def startNewScanFunc(self):
         import ReadAndDisplay
         global saveToLocation
-        ReadAndDisplay.main(self.resolutionEntry.get(), self.minimumPanEntry.get(), self.maximumPanEntry.get(), self.minimumTiltEntry.get(), self.maximumTiltEntry.get(), saveToLocation)
+        ReadAndDisplay.main(self.resolutionEntry.get(), self.averagingEntry.get(), self.minimumPanEntry.get(), self.maximumPanEntry.get(), self.minimumTiltEntry.get(), self.maximumTiltEntry.get(), saveToLocation)
 
 #new scan funtions
 class UploadRaw():
