@@ -4,7 +4,7 @@
 ## requires pySerial to be installed 
 import serial, time, colorsys
 from math import *
-from vpython import canvas, sphere, color, vector, arrow, text
+from vpython import canvas, sphere, color, vector, arrow, text, wtext
 
 window = canvas(title='3D Room Scan', width=1000, height=1000, background=color.white) 
 
@@ -38,6 +38,10 @@ class createPoints():
     def __init__(self, Dist, Strength, Pan, Tilt):
         global pointDist
         self.Dist, self.Strength, self.Pan, self.Tilt = int(Dist)+5, float(Strength), 90 - float(Pan), 90 - float(Tilt)
+        hudDist.text = " Distance: " + str(self.Dist)
+        hudStrength.text = " Strength: " + str(self.Strength)
+        hudPan.text = " Pan: " + str(90-self.Pan)
+        hudTilt.text = " Tilt: " + str(90-self.Tilt)
         if self.Dist > pointDist:
             pointDist = self.Dist
             Xaxis.length = pointDist
@@ -79,6 +83,11 @@ onY100 = text(text="100cm", align='center', color=vector(0,1,0), pos=vector(4,10
 onZ100 = text(text="100cm", align='center', color=vector(0,0,1), pos=vector(0,2,100))
 lineToPoint = arrow(pos=vector(0,0,0), axis=vector(0,0,0), shaftwidth=1, color=vector(0,1,1))
 
+hudDist = wtext(pos = window.title_anchor, text = "Distance")
+hudStrength = wtext(pos = window.title_anchor, text = "Strength")
+hudPan = wtext(pos = window.title_anchor, text = "Pan")
+hudTilt = wtext(pos = window.title_anchor, text = "Tilt")
+
 onX50.length *= 2
 onY50.length *= 2
 onZ50.length *= 2
@@ -93,17 +102,29 @@ onX100.height *= 2
 onY100.height *= 2
 onZ100.height *= 2
 
-def main(resolution, minPos, maxPos, minTilt, maxTilt, saveLocation):
+def main(resolution, average, minPan, maxPan, minTilt, maxTilt, saveLocation):
     try:
         output_file = open(str(saveLocation), "w+")
     except:
         output_file = open("Output/output.txt", "w+")
-    print(resolution, minPos, maxPos, minTilt, maxTilt)
+    time.sleep(1)
+    print(resolution, minPan, maxPan, minTilt, maxTilt)
     ser.write("<".encode())
     ser.write((resolution).encode())
-    ser.write((minPos).encode())
-    ser.write((maxPos).encode())
+    ser.write(">".encode())
+    ser.write("<".encode())
+    ser.write((average).encode())
+    ser.write(">".encode())
+    ser.write("<".encode())
+    ser.write((minPan).encode())
+    ser.write(">".encode())
+    ser.write("<".encode())
+    ser.write((maxPan).encode())
+    ser.write(">".encode())
+    ser.write("<".encode())
     ser.write((minTilt).encode())
+    ser.write(">".encode())
+    ser.write("<".encode())
     ser.write((maxTilt).encode())
     ser.write(">".encode())
 
