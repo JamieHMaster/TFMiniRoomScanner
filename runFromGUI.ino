@@ -49,6 +49,7 @@ PCA9685_ServoEvaluator pwmServo(120, 540); // (-90deg, +90deg)
 TFMiniPlus tfmini;
 
 
+int buzzerNum = 12;
 
 int PAN_NUM = 0; //Pin Pan Motor is connected to on the PCA board
 
@@ -117,6 +118,8 @@ void setup() {
   moveMotor(TILT_NUM, 0);
 
   pinMode(LED_BUILTIN, OUTPUT);
+
+  pinMode(buzzerNum,OUTPUT);//initialize the buzzer pin as an output
 
   Serial.println("<Arduino is ready>");
 
@@ -365,11 +368,19 @@ void showNewData() {
           Serial.print(" ");
           Serial.println(MAXIMUM_TILT);
 
-          digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+          digitalWrite(buzzerNum,HIGH);
 
-          delay(3000);
+          delay(100);
 
-          digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
+          digitalWrite(buzzerNum,LOW);
+
+          delay(2800);
+
+          digitalWrite(buzzerNum,HIGH);
+
+          delay(100);
+
+          digitalWrite(buzzerNum,LOW);
 
         }
 
