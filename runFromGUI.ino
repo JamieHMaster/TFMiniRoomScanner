@@ -2,24 +2,6 @@
 
 #include <stdlib.h>
 
-
-
-
-
-/*
-
-     Servo Motor Control using Arduino and PCA9685 Driver
-
-           by Dejan, https://howtomechatronics.com
-
-           
-
-     Library: https://github.com/NachtRaveVL/PCA9685-Arduino
-
-*/
-
-
-
 #include <Wire.h>
 
 #include "PCA9685.h"
@@ -130,6 +112,8 @@ void setup() {
     showNewData();
 
   }
+  
+  delay(2000);
 
   tfmini.begin(&Serial);        // start tfmini device
 
@@ -390,7 +374,7 @@ void showNewData() {
 
 void mainLoop() {
 
-  for (TiltPos = TiltPos; TiltPos < MAXIMUM_TILT; TiltPos += RESOLUTION) // goes from 0 degrees to 180 degrees
+  for (TiltPos = TiltPos; TiltPos <= MAXIMUM_TILT; TiltPos += RESOLUTION) // goes from 0 degrees to 180 degrees
 
     {
 
@@ -416,7 +400,7 @@ void mainLoop() {
 
     moveMotor(TILT_NUM, TiltPos);
 
-    for (PanPos = PanPos; PanPos >= MINIMUM_PAN; PanPos -= RESOLUTION) // goes from 0 degrees to 180 degrees
+    for (PanPos = PanPos - RESOLUTION; PanPos >= MINIMUM_PAN; PanPos -= RESOLUTION) // goes from 0 degrees to 180 degrees
 
       {
 
@@ -431,6 +415,7 @@ void mainLoop() {
         delay(DELAY_TIME);
 
       }
+      PanPos += RESOLUTION;
 
     }
 

@@ -35,9 +35,10 @@ def mapRanges(value, leftMin, leftMax, rightMin, rightMax):
     return rightMin + (valueScaled * rightSpan)
 
 class createPoints():
-    def __init__(self, Dist, Strength, Pan, Tilt):
+    def __init__(self, Dist, Strength, Pan, Tilt, resolution):
         global pointDist
         self.Dist, self.Strength, self.Pan, self.Tilt = int(Dist)+5, float(Strength), 90 - float(Pan), 90 - float(Tilt)
+        self.pointSize = float(resolution)
         hudDist.text = " Distance: " + str(self.Dist)
         hudStrength.text = " Strength: " + str(self.Strength)
         hudPan.text = " Pan: " + str(90-self.Pan)
@@ -68,11 +69,11 @@ class createPoints():
         self.calculateYpos()
         self.calculateZpos()
         lineToPoint.axis=vector(self.Xpos, self.Ypos, self.Zpos)
-        self.Pos = sphere(pos = vector(self.Xpos,self.Ypos,self.Zpos), radius = 0.8, color = vector(self.pointColor[0], self.pointColor[1], self.pointColor[2]), canvas = window, make_trail=False)
+        self.Pos = sphere(pos = vector(self.Xpos,self.Ypos,self.Zpos), radius = self.pointSize, color = vector(self.pointColor[0], self.pointColor[1], self.pointColor[2]), canvas = window, make_trail=False)
         #print(vector(self.red,self.green,self.blue))
     
     def getData(self):
-        return str(self.Xpos) + " " + str(self.Ypos) + " " + str(self.Zpos) + " " + str(self.pointColor)
+        return str(self.Xpos) + " " + str(self.Ypos) + " " + str(self.Zpos) + " " + str(self.pointColor[0]) + " " + str(self.pointColor[1]) + " " + str(self.pointColor[2]) + "\n"
 
 origin = sphere(pos = vector(0,0,0), radius = 3, color = color.green, canvas = window, make_trail=True)
 Xaxis = arrow(pos=vector(0,0,0), axis=vector(100,0,0), shaftwidth=1, color=vector(1,0,0))
@@ -106,13 +107,11 @@ onY100.height *= 2
 onZ100.height *= 2
 
 def main(resolution, average, minPan, maxPan, minTilt, maxTilt, saveLocation):
-    try:
+    if saveLocation != "":
         outputRaw = open(str(saveLocation)+"RAW", "w+")
-    except:
-        output_file = open("Output/outputRAW.txt", "w+")
-    try:
         outputProcessed = open(str(saveLocation)+"Processed", "w+")
-    except:
+    else:
+        outputRaw = open("Output/outputRAW.txt", "w+")
         outputProcessed = open("Output/outputProcessed.txt", "w+")
     time.sleep(1)
     print(resolution, minPan, maxPan, minTilt, maxTilt)
@@ -138,7 +137,7 @@ def main(resolution, average, minPan, maxPan, minTilt, maxTilt, saveLocation):
     while True:
         line = ser.readline()
         line = str(line.decode("utf-8")) #ser.readline returns a binary, convert to string
-        outputProcessed.write(line)
+        outputRaw.write(line)
         print(line)
         temp = line.split(" ")
 
@@ -146,6 +145,7 @@ def main(resolution, average, minPan, maxPan, minTilt, maxTilt, saveLocation):
             pointDist, PointTemp, PointStrength = temp[1], temp[2], temp[3]
         elif temp[0].strip() == "PT":
             PointPan, PointTilt = temp[1], temp[2]
-            spheres.append(createPoints(pointDist, PointStrength, PointPan, PointTilt))
-            outputProcessed.write(spheres[-1].getData())
+            spheres.append(createPoints(pointDist, PointStrength, PointPan, PointTilt, resolution))
             spheres[-1].addPoint()
+            print(spheres[-1].getData())
+            outputProcessed.write(spheres[-1].getData())
