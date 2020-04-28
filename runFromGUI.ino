@@ -119,6 +119,8 @@ void setup() {
 
   tfmini.setFrameRate(0); //Ouputs a boolean   
 
+  Serial.print("TFMini Plus sucessfully loaded");
+
   mainLoop();
 
 }
@@ -418,6 +420,10 @@ void mainLoop() {
       PanPos += RESOLUTION;
 
     }
+
+    Serial.print("\n");
+    
+    Serial.println("done");
 
 }
 

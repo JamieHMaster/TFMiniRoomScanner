@@ -99,6 +99,10 @@ class NewScan():
         #Time to completion
         self.timeToCompletionLabel = ttk.Label(main_frame, text="0 seconds")
 
+        #back button
+        self.backButton = ttk.Button(main_frame, text="<-- Back")
+        self.backButton['command'] = lambda: mainMenuFunc()
+
         #save button
         self.saveButton = ttk.Button(main_frame, text="Save Output to")
         self.saveButton['command'] = lambda: getSaveLocation()
@@ -123,13 +127,16 @@ class NewScan():
         self.maximumTiltEntry.grid(row=3, column=3)
         self.estimatedTimeLabel.grid(row=4, column=0)
         self.timeToCompletionLabel.grid(row=4, column=1)
-        self.startNewScan.grid(row=5, column=3)
+        self.backButton.grid(row=5, column=0)
         self.saveButton.grid(row=5, column=2)
+        self.startNewScan.grid(row=5, column=3)
     
     def hideWidgets(self):
         self.createNewScanLabel.grid_forget()
         self.resolutionLabel.grid_forget()
         self.resolutionEntry.grid_forget()
+        self.averagingLabel.grid_forget()
+        self.averagingEntry.grid_forget()
         self.panAngleLabel.grid_forget()
         self.minimumPanEntry.grid_forget()
         self.panAngleLabel2.grid_forget()
@@ -137,10 +144,12 @@ class NewScan():
         self.tiltAngleLabel.grid_forget()
         self.minimumTiltEntry.grid_forget()
         self.tiltAngleLabel2.grid_forget()
-        self.maximumPanEntry.grid_forget()
+        self.maximumTiltEntry.grid_forget()
         self.estimatedTimeLabel.grid_forget()
-        self.startNewScan.grid_forget()
+        self.timeToCompletionLabel.grid_forget()
+        self.backButton.grid_forget()
         self.saveButton.grid_forget()
+        self.startNewScan.grid_forget()
     
     def startNewScanFunc(self):
         import ReadAndDisplay
@@ -161,6 +170,10 @@ class UploadRaw():
         self.sourceFileButton = ttk.Button(main_frame, text="Get file name")
         self.sourceFileButton['command'] = lambda: getFileName()
 
+        #back button
+        self.backButton = ttk.Button(main_frame, text="<-- Back")
+        self.backButton['command'] = lambda: mainMenuFunc()
+
         #start upload
         self.startUploadButton = ttk.Button(main_frame, text="Start Upload")
         self.startUploadButton['command'] = lambda: self.startUpload()
@@ -169,12 +182,14 @@ class UploadRaw():
         self.uploadRawLabel.grid(row=0, column=1)
         self.sourceFileLabel.grid(row=1, column=0)
         self.sourceFileButton.grid(row=1, column=1)
-        self.startUploadButton.grid(row=2, column=0)
+        self.backButton.grid(row=2, column=0)
+        self.startUploadButton.grid(row=2, column=1)
     
     def hideWidgets(self):
         self.uploadRawLabel.grid_forget()
         self.sourceFileLabel.grid_forget()
         self.sourceFileButton.grid_forget()
+        self.backButton.grid_forget()
         self.startUploadButton.grid_forget()
     
     def startUpload(self):
@@ -196,6 +211,10 @@ class UploadProcessed():
         self.sourceFileButton = ttk.Button(main_frame, text="Get file name")
         self.sourceFileButton['command'] = lambda: getFileName()
 
+        #back button
+        self.backButton = ttk.Button(main_frame, text="<-- Back")
+        self.backButton['command'] = lambda: mainMenuFunc()
+
         #start upload
         self.startUploadButton = ttk.Button(main_frame, text="Start Upload")
         self.startUploadButton['command'] = lambda: self.startUpload()
@@ -204,12 +223,14 @@ class UploadProcessed():
         self.uploadProcessedLabel.grid(row=0, column=1)
         self.sourceFileLabel.grid(row=1, column=0)
         self.sourceFileButton.grid(row=1, column=1)
-        self.startUploadButton.grid(row=2, column=0)
+        self.backButton.grid(row=2, column=0)
+        self.startUploadButton.grid(row=2, column=1)
     
     def hideWidgets(self):
         self.uploadProcessedLabel.grid_forget()
         self.sourceFileLabel.grid_forget()
         self.sourceFileButton.grid_forget()
+        self.backButton.grid_forget()
         self.startUploadButton.grid_forget()
     
     def startUpload(self):

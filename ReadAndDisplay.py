@@ -1,57 +1,60 @@
-##############
-## Script listens to serial port and writes contents into a file
-##############
-## requires pySerial to be installed 
 import serial, time, colorsys
 from math import *
-from vpython import canvas, sphere, color, vector, arrow, text, wtext
+from vpython import canvas, sphere, color, vector, arrow, text, wtext, checkbox
 
-window = canvas(title='3D Room Scan', width=1000, height=1000, background=color.white) 
+window = canvas(title='3D Room Scan', width=600, height=600, background=color.white) 
 
 serial_port = 'COM5'
 baud_rate = 9600 #In arduino, Serial.begin(baud_rate)
 ser = serial.Serial(serial_port, baud_rate)
 
-strengthMaxVaue = 10000
-distMaxValue = 48000
-longestDist = 100 # the furthest distance a point is from the origin. This controls the size of the arrows
+distMinValue = 100 # set the minimum distance the points have been from the sensor. This helps color in the dots at the end of the scan
+distMaxValue = 100 # set the maximum distance the points have been from the sensor. This helps color in the dots at the end of the scan and to control the size of the axis arrows
+strengthMinValue = 6500 # set the minimum strength the points have been from the sensor. This helps color in the dots at the end of the scan
+strengthMaxValue = 6500 # set the maximum strength the points have been from the sensor. This helps color in the dots at the end of the scan
 
 spheres = []
-pointDist = 0
-PointStrength = 0
-PointTemp = 0
-PointPan = 0
-PointTilt = 0
 
-def mapRanges(value, leftMin, leftMax, rightMin, rightMax):
-    # Figure out how 'wide' each range is
-    leftSpan = leftMax - leftMin
-    rightSpan = rightMax - rightMin
+def showDistance():
+    hudShowStrength.checked = False
+    for i in spheres:
+        i.setColor("distance")
 
-    # Convert the left range into a 0-1 range (float)
-    valueScaled = float(value - leftMin) / float(leftSpan)
+def showStrength():
+    hudShowDist.checked = False
+    for i in spheres:
+        i.setColor("strength")
 
-    # Convert the 0-1 range into a value in the right range.
-    return rightMin + (valueScaled * rightSpan)
+def HSLtoRGB(value, saturation, lightness, minimum, maximum):
+    HUE = (value - minimum)/(maximum-minimum)*250 # 250 is the upper end of blue hue
+    R = colorsys.hls_to_rgb(HUE/360, lightness/100, saturation/100)[0]
+    G = colorsys.hls_to_rgb(HUE/360, lightness/100, saturation/100)[1]
+    B = colorsys.hls_to_rgb(HUE/360, lightness/100, saturation/100)[2]
+    print(value, minimum, maximum, HUE, saturation, lightness, R, G, B)
+    return R, G, B
 
 class createPoints():
-    def __init__(self, Dist, Strength, Pan, Tilt, resolution):
-        global pointDist
-        self.Dist, self.Strength, self.Pan, self.Tilt = int(Dist)+5, float(Strength), 90 - float(Pan), 90 - float(Tilt)
+    def __init__(self, Dist, Temperature, Strength, Pan, Tilt, resolution):
+        global distMinValue, distMaxValue, strengthMinValue, strengthMaxValue
+        self.Dist, self.Temp, self.Strength, self.Pan, self.Tilt = int(Dist)+5, float(Temperature), float(Strength), 90 - float(Pan), 90 - float(Tilt)
         self.pointSize = float(resolution)
         hudDist.text = " Distance: " + str(self.Dist)
         hudStrength.text = " Strength: " + str(self.Strength)
         hudPan.text = " Pan: " + str(90-self.Pan)
         hudTilt.text = " Tilt: " + str(90-self.Tilt)
-        if self.Dist > pointDist:
-            pointDist = self.Dist
-            Xaxis.length = pointDist
-            Yaxis.length = pointDist
-            Zaxis.length = pointDist
+        if self.Dist < distMinValue:
+            distMinValue = self.Dist
+        if self.Dist > distMaxValue:
+            distMaxValue = self.Dist
+            Xaxis.length = distMaxValue
+            Yaxis.length = distMaxValue
+            Zaxis.length = distMaxValue
+        if self.Strength < strengthMinValue:
+            strengthMinValue = self.Strength
+        if self.Strength > strengthMaxValue:
+            strengthMaxValue = self.Strength
         #print(self.Dist, self.Strength, self.Pan, self.Tilt)
         self.Xpos, self.Ypos, self.Zpos = 0, 0, 0
-        self.pointColor = mapRanges(self.Dist, 0, strengthMaxVaue, 0, 140)
-        self.pointColor = colorsys.hsv_to_rgb(self.pointColor,1,1)
         #print(self.pointColor)
 
     def calculateXpos(self):
@@ -69,11 +72,24 @@ class createPoints():
         self.calculateYpos()
         self.calculateZpos()
         lineToPoint.axis=vector(self.Xpos, self.Ypos, self.Zpos)
-        self.Pos = sphere(pos = vector(self.Xpos,self.Ypos,self.Zpos), radius = self.pointSize, color = vector(self.pointColor[0], self.pointColor[1], self.pointColor[2]), canvas = window, make_trail=False)
+        self.Pos = sphere(pos = vector(self.Xpos,self.Ypos,self.Zpos), radius = self.pointSize, color = vector(0,0,0), canvas = window, make_trail=False)
         #print(vector(self.red,self.green,self.blue))
+
+    def setColor(self, showBasedOn):
+        global distMinValue
+        global distMaxValue
+
+        if showBasedOn == "distance":
+            self.RGBColor = HSLtoRGB(self.Dist, 100, 50, distMinValue, distMaxValue)
+        elif showBasedOn == "strength":
+            self.RGBColor = HSLtoRGB(self.Strength, 100, 50, strengthMinValue, strengthMaxValue)
+        else:
+            self.RGBColor = (0,0,0)
+
+        self.Pos.color = vector(self.RGBColor[0], self.RGBColor[1], self.RGBColor[2])
     
     def getData(self):
-        return str(self.Xpos) + " " + str(self.Ypos) + " " + str(self.Zpos) + " " + str(self.pointColor[0]) + " " + str(self.pointColor[1]) + " " + str(self.pointColor[2]) + "\n"
+        return str(self.Xpos) + " " + str(self.Ypos) + " " + str(self.Zpos) + " " + str(HSLtoRGB(self.Dist, 100, 50, distMinValue, distMaxValue)[0]) + " " + str(HSLtoRGB(self.Dist, 100, 50, distMinValue, distMaxValue)[1]) + " " + str(HSLtoRGB(self.Dist, 100, 50, distMinValue, distMaxValue)[2]) + " " + str(HSLtoRGB(self.Strength, 100, 50, strengthMinValue, strengthMaxValue)[0]) + " " + str(HSLtoRGB(self.Strength, 100, 50, strengthMinValue, strengthMaxValue)[1]) + " " + str(HSLtoRGB(self.Strength, 100, 50, strengthMinValue, strengthMaxValue)[2]) +"\n"
 
 origin = sphere(pos = vector(0,0,0), radius = 3, color = color.green, canvas = window, make_trail=True)
 Xaxis = arrow(pos=vector(0,0,0), axis=vector(100,0,0), shaftwidth=1, color=vector(1,0,0))
@@ -87,10 +103,15 @@ onY100 = text(text="100cm", align='center', color=vector(0,1,0), pos=vector(4,10
 onZ100 = text(text="100cm", align='center', color=vector(0,0,1), pos=vector(0,2,100))
 lineToPoint = arrow(pos=vector(0,0,0), axis=vector(0,0,0), shaftwidth=1, color=vector(0,1,1))
 
-hudDist = wtext(pos = window.title_anchor, text = "Distance")
-hudStrength = wtext(pos = window.title_anchor, text = "Strength")
-hudPan = wtext(pos = window.title_anchor, text = "Pan")
-hudTilt = wtext(pos = window.title_anchor, text = "Tilt")
+hudDist = wtext(pos = window.caption_anchor, text = "Distance ")
+hudStrength = wtext(pos = window.caption_anchor, text = "Strength ")
+hudPan = wtext(pos = window.caption_anchor, text = "Pan ")
+hudTilt = wtext(pos = window.caption_anchor, text = "Tilt ")
+hudShowDist = checkbox(pos = window.caption_anchor, text = "Show distance", bind=showDistance)
+hudShowStrength = checkbox(pos = window.caption_anchor, text = "Show Strength", bind=showStrength)
+hudShowDist.checked = True
+hudShowDist.disabled = True
+hudShowStrength.disabled = True
 
 onX50.length *= 2
 onY50.length *= 2
@@ -110,11 +131,15 @@ def main(resolution, average, minPan, maxPan, minTilt, maxTilt, saveLocation):
     if saveLocation != "":
         outputRaw = open(str(saveLocation)+"RAW", "w+")
         outputProcessed = open(str(saveLocation)+"Processed", "w+")
+        output = open(str(saveLocation), "w+")
     else:
         outputRaw = open("Output/outputRAW.txt", "w+")
         outputProcessed = open("Output/outputProcessed.txt", "w+")
+        output = open("Output/output.txt", "w+")
+    
     time.sleep(1)
     print(resolution, minPan, maxPan, minTilt, maxTilt)
+    outputRaw.write("Resolution " + resolution + "\n")
     ser.write("<".encode())
     ser.write((resolution).encode())
     ser.write(">".encode())
@@ -145,7 +170,14 @@ def main(resolution, average, minPan, maxPan, minTilt, maxTilt, saveLocation):
             pointDist, PointTemp, PointStrength = temp[1], temp[2], temp[3]
         elif temp[0].strip() == "PT":
             PointPan, PointTilt = temp[1], temp[2]
-            spheres.append(createPoints(pointDist, PointStrength, PointPan, PointTilt, resolution))
+            spheres.append(createPoints(pointDist, PointTemp, PointStrength, PointPan, PointTilt, resolution))
             spheres[-1].addPoint()
-            print(spheres[-1].getData())
-            outputProcessed.write(spheres[-1].getData())
+        elif temp[0].strip() == "done":
+            break
+    for i in spheres:
+        i.setColor("distance")
+        outputProcessed.write(i.getData())
+        output.write(str(i.Dist) + " " + str(i.Temp) + " " + str(i.Strength) + " " + str(i.Pan) + " " + str(i.Tilt) + " " + str(i.Xpos) + " " + str(i.Ypos) + " " + str(i.Zpos) + " " + str(i.RGBColor) + "\n")
+    outputProcessed.write("done")
+    hudShowDist.disabled = False
+    hudShowStrength.disabled = False
