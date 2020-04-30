@@ -13,6 +13,8 @@ distMaxValue = 100 # set the maximum distance the points have been from the sens
 strengthMinValue = 6500 # set the minimum strength the points have been from the sensor. This helps color in the dots at the end of the scan
 strengthMaxValue = 6500 # set the maximum strength the points have been from the sensor. This helps color in the dots at the end of the scan
 
+Resolution = 0
+showUnreliablePoints = 1
 spheres = []
 
 def showDistance():
@@ -25,6 +27,16 @@ def showStrength():
     for i in spheres:
         i.setColor("strength")
 
+def showUnreliable():
+    global showUnreliablePoints
+    showUnreliablePoints = 1 - showUnreliablePoints
+    if showUnreliablePoints == 0:
+        for i in spheres:
+            i.hideUnreliable()
+    elif showUnreliablePoints == 1:
+        for i in spheres:
+            i.showPoint()
+
 def HSLtoRGB(value, saturation, lightness, minimum, maximum):
     HUE = (value - minimum)/(maximum-minimum)*250 # 250 is the upper end of blue hue
     R = colorsys.hls_to_rgb(HUE/360, lightness/100, saturation/100)[0]
@@ -32,6 +44,11 @@ def HSLtoRGB(value, saturation, lightness, minimum, maximum):
     B = colorsys.hls_to_rgb(HUE/360, lightness/100, saturation/100)[2]
     print(value, minimum, maximum, HUE, saturation, lightness, R, G, B)
     return R, G, B
+
+def getPoint(panValue, tiltValue):
+    for i in spheres:
+        if i.Pan == panValue and i.Tilt == tiltValue:
+            return i.Dist, i.Strength
 
 class createPoints():
     def __init__(self, Dist, Temperature, Strength, Pan, Tilt, resolution):
@@ -66,14 +83,30 @@ class createPoints():
     def calculateZpos(self):
         self.Zpos = self.Dist*sin(radians(self.Tilt))*cos(radians(self.Pan))
 
+    def hideUnreliable(self):
+        if self.Dist < 10 or self.Strength < 100:
+            self.reliable = False
+            self.Pos.visible = False
+        else:
+            self.reliable = True
+    
+    def showPoint(self):
+        self.Pos.visible = True
+
     def addPoint(self):
         global lineToPoint
         self.calculateXpos()
         self.calculateYpos()
         self.calculateZpos()
         lineToPoint.axis=vector(self.Xpos, self.Ypos, self.Zpos)
-        self.Pos = sphere(pos = vector(self.Xpos,self.Ypos,self.Zpos), radius = self.pointSize, color = vector(0,0,0), canvas = window, make_trail=False)
-        #print(vector(self.red,self.green,self.blue))
+        self.Pos = sphere(pos = vector(self.Xpos, self.Ypos, self.Zpos), radius = self.pointSize, color = vector(0,0,0), canvas = window, make_trail=False)
+        self.hideUnreliable()
+    
+    def inFill(self):
+        global Resolution
+        if not self.reliable:
+            self.calculatedDist = (getPoint(self.Pan-Resolution, self.Tilt)[0] + getPoint(self.Pan+Resolution, self.Tilt)[0] + getPoint(self.Pan, self.Tilt-Resolution)[0] + getPoint(self.Pan, self.Tilt + Resolution)[0])/4
+            self.calculatedStrength = (getPoint(self.Pan-Resolution, self.Tilt)[1] + getPoint(self.Pan+Resolution, self.Tilt)[1] + getPoint(self.Pan, self.Tilt-Resolution)[1] + getPoint(self.Pan, self.Tilt + Resolution)[1])/4
 
     def setColor(self, showBasedOn):
         global distMinValue
@@ -109,9 +142,12 @@ hudPan = wtext(pos = window.caption_anchor, text = "Pan ")
 hudTilt = wtext(pos = window.caption_anchor, text = "Tilt ")
 hudShowDist = checkbox(pos = window.caption_anchor, text = "Show distance", bind=showDistance)
 hudShowStrength = checkbox(pos = window.caption_anchor, text = "Show Strength", bind=showStrength)
+hudShowUnreliable = checkbox(pos = window.caption_anchor, text = "Show filtered", bind=showUnreliable)
 hudShowDist.checked = True
+hudShowUnreliable.checked = True
 hudShowDist.disabled = True
 hudShowStrength.disabled = True
+hudShowUnreliable.disabled = True
 
 onX50.length *= 2
 onY50.length *= 2
@@ -128,6 +164,8 @@ onY100.height *= 2
 onZ100.height *= 2
 
 def main(resolution, average, minPan, maxPan, minTilt, maxTilt, saveLocation):
+    global Resolution
+    Resolution = resolution
     if saveLocation != "":
         outputRaw = open(str(saveLocation)+"RAW", "w+")
         outputProcessed = open(str(saveLocation)+"Processed", "w+")
@@ -137,7 +175,6 @@ def main(resolution, average, minPan, maxPan, minTilt, maxTilt, saveLocation):
         outputProcessed = open("Output/outputProcessed.txt", "w+")
         output = open("Output/output.txt", "w+")
     
-    time.sleep(1)
     print(resolution, minPan, maxPan, minTilt, maxTilt)
     outputRaw.write("Resolution " + resolution + "\n")
     ser.write("<".encode())
@@ -177,7 +214,11 @@ def main(resolution, average, minPan, maxPan, minTilt, maxTilt, saveLocation):
     for i in spheres:
         i.setColor("distance")
         outputProcessed.write(i.getData())
-        output.write(str(i.Dist) + " " + str(i.Temp) + " " + str(i.Strength) + " " + str(i.Pan) + " " + str(i.Tilt) + " " + str(i.Xpos) + " " + str(i.Ypos) + " " + str(i.Zpos) + " " + str(i.RGBColor) + "\n")
+        try:
+            output.write(str(i.Dist) + " " + str(i.Temp) + " " + str(i.Strength) + " " + str(i.Pan) + " " + str(i.Tilt) + " " + str(i.Xpos) + " " + str(i.Ypos) + " " + str(i.Zpos) + " " + str(i.RGBColor) + " " + str(i.calculatedXPos) + " " + str(i.calculatedYPos) + " " + str(i.calculatedZPos) + "\n")
+        except:
+            output.write(str(i.Dist) + " " + str(i.Temp) + " " + str(i.Strength) + " " + str(i.Pan) + " " + str(i.Tilt) + " " + str(i.Xpos) + " " + str(i.Ypos) + " " + str(i.Zpos) + " " + str(i.RGBColor) + " " + "\n")   
     outputProcessed.write("done")
     hudShowDist.disabled = False
     hudShowStrength.disabled = False
+    hudShowUnreliable.disabled = False

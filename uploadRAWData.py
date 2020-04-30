@@ -142,8 +142,6 @@ def main(fileName):
             spheres[-1].addPoint()
         elif temp[0].strip() == "Resolution":
             PointSize = float(temp[1])
-            print(PointSize)
-            time.sleep(5)
         elif temp[0].strip() == "done":
             break
     for i in spheres:
